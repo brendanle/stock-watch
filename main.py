@@ -34,7 +34,17 @@ def fx_monthly(first_currency, second_currency, api_key):
     return response.json()
 
 def commodities(commodity, api_key):
-    url = f"https://www.alphavantage.co/query?function={commodity}&interval=monthly&apikey=demo"
+    url = f"https://www.alphavantage.co/query?function={commodity}&interval=monthly&apikey={api_key}"
+    response = requests.get(url)
+    return response.json()
+
+def economic_indicator(indicator, api_key):
+    url = f"https://www.alphavantage.co/query?function={indicator}&interval=annual&apikey={api_key}"
+    response = requests.get(url)
+    return response.json()
+
+def economic_indicator_treasury_yield(maturity, api_key):
+    url = f"https://www.alphavantage.co/query?function=TREASURY_YIELD&interval=monthly&maturity={maturity}&apikey={api_key}"
     response = requests.get(url)
     return response.json()
 
@@ -171,6 +181,56 @@ elif choice == "3":
         print("Couldn't plot.")
 
 elif choice == "4":
-    print("You selected Option 4.")
+
+    indicator = input("[REAL_GDP, REAL_GDP_PER_CAPITA, TREASURY_YIELD, CPI, INFLATION, RETAIL_SALES, DURABLES, UNEMPLOYMENT, NONFARM_PAYROLL\nEnter a commodity. ")
+
+    if indicator == "TREASURY_YIELD":
+
+        #By default, maturity=10year. Strings 3month, 2year, 5year, 7year, 10year, and 30year are accepted.
+        maturity = input("\n[3month, 2year, 5year, 7year, 10year, 30year]\nEnter the time stamp you would like to access. ")
+
+        try:
+            treasury_yield_data = economic_indicator_treasury_yield(maturity, api_key)
+            df = pd.DataFrame.from_dict(treasury_yield_data["data"])
+            df = df.set_index("date")
+            df.index = pd.to_datetime(df.index)
+            df["value"] = df["value"].replace(".", np.nan)
+            df = df.dropna()
+            prices = df["value"].astype(float).resample("M").last()
+            axis = prices.plot(title=treasury_yield_data["name"])
+            axis.set_xlabel("Year")
+            axis.set_ylabel(treasury_yield_data["unit"])
+        except KeyError as e:
+            print(f"encountered error (chart): {e}")
+            valid_ticker = False
+
+        if valid_ticker:
+            plt.savefig("stockimage.png")
+            plt.show()
+        else:
+            print("Couldn't plot.")
+    else:
+        if valid_ticker:
+            try:
+                economic_indicator_data = economic_indicator(indicator, api_key)
+                df = pd.DataFrame.from_dict(economic_indicator_data["data"])
+                df = df.set_index("date")
+                df.index = pd.to_datetime(df.index)
+                df["value"] = df["value"].replace(".", np.nan)
+                df = df.dropna()
+                prices = df["value"].astype(float).resample("M").last()
+                axis = prices.plot(title=economic_indicator_data["name"])
+                axis.set_xlabel("Year")
+                axis.set_ylabel(economic_indicator_data["unit"])
+            except KeyError as e:
+                print(f"encountered error (chart): {e}")
+                valid_ticker = False
+
+        if valid_ticker:
+            plt.savefig("stockimage.png")
+            plt.show()
+        else:
+            print("Couldn't plot.")
+
 else:
     print("Invalid choice. Please enter a number between 1 and 5.")
