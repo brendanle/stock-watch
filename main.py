@@ -1,6 +1,7 @@
 # documentation: https://www.alphavantage.co/documentation/
 
 import requests
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -28,13 +29,18 @@ def currency_exchange_rate(first_currency, second_currency, api_key):
     return response.json()
 
 def fx_monthly(first_currency, second_currency, api_key):
-    url = f"https://www.alphavantage.co/query?function=FX_MONTHLY&from_symbol={first_currency}&to_symbol={second_currency}&apikey=demo"
+    url = f"https://www.alphavantage.co/query?function=FX_MONTHLY&from_symbol={first_currency}&to_symbol={second_currency}&apikey={api_key}"
+    response = requests.get(url)
+    return response.json()
+
+def commodities(commodity, api_key):
+    url = f"https://www.alphavantage.co/query?function={commodity}&interval=monthly&apikey=demo"
     response = requests.get(url)
     return response.json()
 
 print("\nSelect an option \n ==== MENU ====")
 
-menu_items = ["Stocks", "Forex", "Crypto", "Commodities", "Economic Indicators"]
+menu_items = ["Stocks", "Forex/Crypto", "Commodities", "Economic Indicators"]
 
 for i in range(len(menu_items)):
     print(f"{i+1}. {menu_items[i]}")
@@ -139,10 +145,32 @@ elif choice == "2":
         print("Couldn't plot.")
 
 elif choice == "3":
-    print("You selected Option 3.")
+
+    commodity = input("[WTI, BRENT, NATURAL_GAS, COPPER, ALUMINUM, WHEAT, CORN, COTTON, SUGAR, COFFEE, ALL_COMMODITIES]\nEnter a commodity. ")
+
+    if valid_ticker:
+        try:
+            commodity_data = commodities(commodity, api_key)
+            df = pd.DataFrame.from_dict(commodity_data["data"])
+            df = df.set_index("date")
+            df.index = pd.to_datetime(df.index)
+            df["value"] = df["value"].replace(".", np.nan)
+            df = df.dropna()
+            prices = df["value"].astype(float).resample("M").last()
+            axis = prices.plot(title=commodity_data["name"])
+            axis.set_xlabel("Year")
+            axis.set_ylabel(commodity_data["unit"])
+        except KeyError as e:
+            print(f"encountered error (chart): {e}")
+            valid_ticker = False
+
+    if valid_ticker:
+        plt.savefig("stockimage.png")
+        plt.show()
+    else:
+        print("Couldn't plot.")
+
 elif choice == "4":
     print("You selected Option 4.")
-elif choice == "5":
-    print("You selected Option 5.")
 else:
     print("Invalid choice. Please enter a number between 1 and 5.")
