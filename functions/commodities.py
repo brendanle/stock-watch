@@ -5,8 +5,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-api_key = "N20TDIL2VOIJS399"
-
 def commodities(commodity, api_key):
     url = f"https://www.alphavantage.co/query?function={commodity}&interval=monthly&apikey={api_key}"
     response = requests.get(url)

@@ -5,9 +5,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-api_key = "N20TDIL2VOIJS399"
-valid_ticker = True
-
 def economic_indicator(indicator, api_key):
     url = f"https://www.alphavantage.co/query?function={indicator}&interval=annual&apikey={api_key}"
     response = requests.get(url)
