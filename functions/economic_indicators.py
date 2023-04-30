@@ -1,5 +1,3 @@
-# documentation: https://www.alphavantage.co/documentation/
-
 import requests
 import numpy as np
 import pandas as pd
@@ -17,7 +15,6 @@ def economic_indicator_treasury_yield(maturity, api_key):
 
 def plot_economic_indicator(indicator, api_key):
     valid_ticker = True
-
     try:
         economic_indicator_data = economic_indicator(indicator, api_key)
         df = pd.DataFrame.from_dict(economic_indicator_data["data"])
@@ -39,10 +36,8 @@ def plot_economic_indicator(indicator, api_key):
     else:
         print("Couldn't plot.")
 
-
 def plot_economic_indicator_treasury_yield(maturity, api_key):
     valid_ticker = True
-
     try:
         treasury_yield_data = economic_indicator_treasury_yield(maturity, api_key)
         df = pd.DataFrame.from_dict(treasury_yield_data["data"])
