@@ -15,20 +15,21 @@ def economic_indicator_treasury_yield(maturity, api_key):
 
 def plot_economic_indicator(indicator, api_key):
     valid_ticker = True
-    try:
-        economic_indicator_data = economic_indicator(indicator, api_key)
-        df = pd.DataFrame.from_dict(economic_indicator_data["data"])
-        df = df.set_index("date")
-        df.index = pd.to_datetime(df.index)
-        df["value"] = df["value"].replace(".", np.nan)
-        df = df.dropna()
-        prices = df["value"].astype(float).resample("M").last()
-        axis = prices.plot(title=economic_indicator_data["name"])
-        axis.set_xlabel("Year")
-        axis.set_ylabel(economic_indicator_data["unit"])
-    except KeyError as e:
-        print(f"encountered error (economic_indicator): {e}")
-        valid_ticker = False
+    if valid_ticker:
+        try:
+            economic_indicator_data = economic_indicator(indicator, api_key)
+            df = pd.DataFrame.from_dict(economic_indicator_data["data"])
+            df = df.set_index("date")
+            df.index = pd.to_datetime(df.index)
+            df["value"] = df["value"].replace(".", np.nan)
+            df = df.dropna()
+            prices = df["value"].astype(float).resample("M").last()
+            axis = prices.plot(title=economic_indicator_data["name"])
+            axis.set_xlabel("Year")
+            axis.set_ylabel(economic_indicator_data["unit"])
+        except KeyError as e:
+            print(f"encountered error (economic_indicator): {e}")
+            valid_ticker = False
 
     if valid_ticker:
         plt.savefig("image.png")
